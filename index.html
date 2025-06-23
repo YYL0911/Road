@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>測試</title>
+  <style>
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 18px;
+    }
+    table {
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    td {
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      border: 1px solid #ccc;
+      font-weight: bold;
+    }
+    .B { background-color: #ffcccc; }
+    .P { background-color: #cce5ff; }
+    .Red { background-color: red; color: white; }
+    .Blue { background-color: blue; color: white; }
+  </style>
+</head>
+<body>
+  <button onclick="addResult(1)">莊 (1)</button>
+  <button onclick="addResult(2)">閒 (2)</button>
+  <button onclick="reset()">重置</button>
+  <button onclick="cleanPre()">返回</button>
+
+  <h2>大路</h2>
+  <div id="bigRoadContainer"></div>
+
+  <h2>大眼路</h2>
+  <div id="bigEyeBoyContainer"></div>
+
+  <h2>小路</h2>
+  <div id="smallContainer"></div>
+
+  <h2>甲由路</h2>
+  <div id="thirContainer"></div>
+
+  <script>
+    /*
+    bigRoad大路 = [1,2,1,1,2,2,1,1,1,1]
+    bigRoadIdx = [0,6,12,13,18,19,24,25,26,27]
+    ０ ６　 １２ １８ ２４　莊閒莊閒莊
+    １ ７　 １３ １９ ２５　　　莊閒莊
+    ２ ８　 １４ ２０ ２６　　　　　莊
+    ３ ９　 １５ ２１ ２７　　　　　莊
+    ４ １０ １６ ２２ ２８
+    ５ １１ １７ ２３ ２９
+    */
+    let bigRoad = []; // 大路
+    let bigRoadIdx = []; // 對應格子編號
+
+
+    // 輸入大路
+    function addResult(result) {
+      bigRoad.push(result);
+      renderAll();
+      
+    }
+    // 鍵盤輸入大路
+    document.addEventListener('keydown', function(event) {
+      if (event.key === '1') addResult(1)
+      else if (event.key === '2') addResult(2)
+      
+    });
+
+    
+    // 畫出表格
+    function renderAll() {
+      bigRoadIdx = outPut(bigRoad,'bigRoadContainer');
+      otherRoad(1,6,2,"bigEyeBoyContainer");
+      otherRoad(2,12,3, "smallContainer");
+      otherRoad(3,18,4, "thirContainer");
+      
+    }
+
+    renderAll(); // 初始畫面
+
+    //清空
+    function reset() {
+      bigRoad = [];
+      bigRoadIdx = [];
+      renderAll();
+    }
+    // 清除上一輸入
+    function cleanPre() {
+      bigRoad.pop();
+      renderAll();
+    }
+
+    // 輸出對應編號，以及由對應編號畫出格子(路的結果，要畫在哪個id上)
+    function outPut(road, containerId){
+        let maxIdx = 0 // 紀錄最大格子編號
+        // 格子編號(由上往下 由左往右)
+        // 0 6 ...
+        // 1 7 ...
+        // 2 8 ...
+        // 3 9 ...
+        // 4 10 ...
+        // 5 11 ...
+        let currentIdx = 0; // 目前會存放在哪個格子編號
+        let lastLine = 0; //上次在的行數
+        let seatDir = 1; //距離下一個位置(1-向下 or 6-向左)
+
+        let preType = road[0]; //要對比上一個是莊還是閒
+        let saveIdxMap = [0]; // 紀錄對應格子
+        
+        for (let j = 1; j < road.length; j++) {
+          // 豹子 => 跳過，不會用到對比
+          if(road[j] > 2){
+            saveIdxMap.push(-1)
+            continue
+          } 
+
+          //換行
+          if (preType != road[j]) {
+            lastLine += 1; // 行數增加
+            currentIdx = lastLine*6; // 格子編號
+            saveIdxMap.push(currentIdx)
+            seatDir = 1; //往下放
+            preType = road[j];
+          }
+          //與上一個同號 => 同行
+          else{
+            let tmpSaveIdx = currentIdx + seatDir;
+            //超過底部 ||  格子有存放了 => 之前的超過長度6個,已被佔格
+            if (tmpSaveIdx == ((lastLine+1)*6) || seatDir == 6 || saveIdxMap.includes(tmpSaveIdx))  {
+              seatDir = 6; // 下一判斷往右新增
+              currentIdx += seatDir;
+              saveIdxMap.push(currentIdx)
+            }
+            //不是底部,正常向下
+            else {
+              currentIdx = tmpSaveIdx;
+              saveIdxMap.push(currentIdx)
+            }
+          }
+          if(currentIdx > maxIdx) maxIdx = currentIdx
+        }
+
+        renderTable1(road, saveIdxMap, containerId, false, maxIdx)
+
+        return saveIdxMap
+    }
+
+    function checkTwoLine(startIdx, num){
+      // 找到對應行數的第一格是第幾局結果
+      let currentRoadIdx = bigRoadIdx.indexOf(startIdx)
+      // 第一格式莊還是閒
+      const taget = bigRoad[currentRoadIdx]
+      let times = num
+      let ans = 0
+      while(times > 0){
+          if(taget == bigRoad[currentRoadIdx]) ans++
+          else if(bigRoad[currentRoadIdx] == 3) times++
+          else break
+          currentRoadIdx++
+          times--
+      }
+
+      return ans
+    }
+
+    
+    function otherRoad(line, minIdx, start, containerId){
+        let currentMinIdx = minIdx
+        let ans = [] // 輸出該路結果
+
+        for(let i = start; i < bigRoad.length; i++){
+          if(bigRoadIdx[i] > currentMinIdx){
+            // 每行第一個
+            if(bigRoadIdx[i] % 6 == 0){
+                let col1 = checkTwoLine(bigRoadIdx[i]-(6*(line+1)), 6)
+                let col2 = checkTwoLine(bigRoadIdx[i]-6, 6)
+
+                if(col1 == col2) ans.push(1)
+                else ans.push(2)
+            }
+            // 其餘檢查
+            else{
+                // 隔壁有人
+                if(bigRoadIdx.includes(bigRoadIdx[i] - 6*line))ans.push(1)
+                else{
+                    // 隔壁上面有人
+                    if(bigRoadIdx.includes(bigRoadIdx[i] - (6*line) -1)) ans.push(2)
+                    else ans.push(1)
+                }
+            }
+            currentMinIdx = bigRoadIdx[i]
+          }
+        }
+        // 輸出答案，並繪製畫面
+        outPut(ans, containerId)
+    }
+
+
+    // 劃出畫面
+    function renderTable1(data, dataidx, containerId, isColor = false, mmm) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      const table = document.createElement('table');
+
+      
+      for (let row = 0; row < 6; row++) {
+        const tr = document.createElement('tr');
+        for (let col = 0; col < Math.ceil(mmm/6)+1; col++) {
+          const td = document.createElement('td');
+
+          let idx = dataidx.indexOf(col*6+row)
+          if (idx != -1 && data[idx]) {
+            td.className = data[idx]==1? "B" : "P"
+          }
+          tr.appendChild(td);
+        }
+        table.appendChild(tr);
+      }
+
+      container.appendChild(table);
+    }
+
+  </script>
+</body>
+</html>
