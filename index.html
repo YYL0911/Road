@@ -55,7 +55,7 @@
     ４ １０ １６ ２２ ２８
     ５ １１ １７ ２３ ２９
     */
-    let bigRoad = []; // 大路
+    let bigRoad = [1,1,1,1,1,1,1,2,2,2,2,1,2]; // 大路
     let bigRoadIdx = []; // 對應格子編號
 
 
@@ -76,9 +76,9 @@
     // 畫出表格
     function renderAll() {
       bigRoadIdx = outPut(bigRoad,'bigRoadContainer');
-      otherRoad(1,6,2,"bigEyeBoyContainer");
-      otherRoad(2,12,3, "smallContainer");
-      otherRoad(3,18,4, "thirContainer");
+      otherRoad(1,6,"bigEyeBoyContainer");
+      otherRoad(2,12, "smallContainer");
+      otherRoad(3,18, "thirContainer");
       
     }
 
@@ -170,9 +170,16 @@
     }
 
     
-    function otherRoad(line, minIdx, start, containerId){
+    function otherRoad(line, minIdx,  containerId){
         let currentMinIdx = minIdx
         let ans = [] // 輸出該路結果
+        let start = 1000
+        for(let i = 0; i < bigRoadIdx.length; i++){
+          if(bigRoadIdx[i] == minIdx+1 || bigRoadIdx[i] == minIdx+6){
+            start = i
+            break
+          }
+        }
 
         for(let i = start; i < bigRoad.length; i++){
           if(bigRoadIdx[i] > currentMinIdx){
