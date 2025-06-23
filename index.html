@@ -76,6 +76,7 @@
     // 畫出表格
     function renderAll() {
       bigRoadIdx = outPut(bigRoad,'bigRoadContainer');
+      // console.log(bigRoadIdx)
       otherRoad(1,6,"bigEyeBoyContainer");
       otherRoad(2,12, "smallContainer");
       otherRoad(3,18, "thirContainer");
@@ -151,24 +152,17 @@
         return saveIdxMap
     }
 
-    function checkTwoLine(startIdx, num){
-      // 找到對應行數的第一格是第幾局結果
-      let currentRoadIdx = bigRoadIdx.indexOf(startIdx)
-      // 第一格式莊還是閒
-      const taget = bigRoad[currentRoadIdx]
-      let times = num
-      let ans = 0
-      while(times > 0){
-          if(taget == bigRoad[currentRoadIdx]) ans++
-          else if(bigRoad[currentRoadIdx] == 3) times++
-          else break
-          currentRoadIdx++
-          times--
-      }
 
+    // 計算指定行數有連續相同幾個(以第一格為準)
+    function lineCount(startIdx){
+      let target = bigRoad[bigRoadIdx.indexOf(startIdx)]
+      let ans = 0
+      for(let i = startIdx; i < startIdx + 6; i++){
+        if(bigRoadIdx.includes(i) && bigRoad[bigRoadIdx.indexOf(i)] == target) ans++
+        else break
+      }
       return ans
     }
-
     
     function otherRoad(line, minIdx,  containerId){
         let currentMinIdx = minIdx
@@ -185,21 +179,13 @@
           if(bigRoadIdx[i] > currentMinIdx){
             // 每行第一個
             if(bigRoadIdx[i] % 6 == 0){
-                let col1 = checkTwoLine(bigRoadIdx[i]-(6*(line+1)), 6)
-                let col2 = checkTwoLine(bigRoadIdx[i]-6, 6)
-
-                if(col1 == col2) ans.push(1)
-                else ans.push(2)
+              lineCount(bigRoadIdx[i]-(6*(line+1))) == lineCount(bigRoadIdx[i]-6) ? ans.push(1) :ans.push(2)
             }
             // 其餘檢查
             else{
-                // 隔壁有人
-                if(bigRoadIdx.includes(bigRoadIdx[i] - 6*line))ans.push(1)
-                else{
-                    // 隔壁上面有人
-                    if(bigRoadIdx.includes(bigRoadIdx[i] - (6*line) -1)) ans.push(2)
-                    else ans.push(1)
-                }
+              let preXline = lineCount(6*(Math.floor(bigRoadIdx[i]/6)-line))
+              let selfIdx = bigRoadIdx[i]%6
+              preXline > selfIdx + 1 ? ans.push(1) : selfIdx + 1 - preXline == 1 ? ans.push(2) : ans.push(1)
             }
             currentMinIdx = bigRoadIdx[i]
           }
