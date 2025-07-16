@@ -209,12 +209,13 @@
         for(let i = 0; i < inputBigRoadIdx.length; i++){
           if(inputBigRoadIdx[i] == minIdx+1 || inputBigRoadIdx[i] == minIdx+6){
             start = i
+            currentMinIdx = inputBigRoadIdx[i]
             break
           }
         }
 
         for(let i = start; i < inputBigRoad.length; i++){
-          if(inputBigRoadIdx[i] > currentMinIdx){
+          if(inputBigRoadIdx[i] == currentMinIdx){
             // 每行第一個
             if(inputBigRoadIdx[i] % 6 == 0){
               // inputBigRoadIdx[i]-(6*(line+1)) 前n列
@@ -228,7 +229,17 @@
               let selfIdx = inputBigRoadIdx[i]%6
               preXline > selfIdx + 1 ? ans.push(1) : selfIdx + 1 - preXline == 1 ? ans.push(2) : ans.push(1)
             }
-            currentMinIdx = inputBigRoadIdx[i]
+
+            if(inputBigRoadIdx[i]%6 == 5){
+              if(inputBigRoadIdx.includes(inputBigRoadIdx[i]+6) && 
+                inputBigRoad[i] == inputBigRoad[inputBigRoadIdx.indexOf(inputBigRoadIdx[i]+6)]
+              ) currentMinIdx = inputBigRoadIdx[i]+6
+              else currentMinIdx = inputBigRoadIdx[i]+1
+            }
+            else{
+              if(inputBigRoadIdx.includes(inputBigRoadIdx[i]+1)) currentMinIdx = inputBigRoadIdx[i]+1
+              else currentMinIdx = Math.floor((inputBigRoadIdx[i]+6)/6)*6
+            }
           }
         }
         
