@@ -24,6 +24,10 @@
     .P { background-color: #cce5ff; }
     .Red { background-color: red; color: white; }
     .Blue { background-color: blue; color: white; }
+
+    #preci{
+      font-size: 20px;
+    }
   </style>
 </head>
 <body>
@@ -34,6 +38,9 @@
 
   <h2>大路</h2>
   <div id="bigRoadContainer"></div>
+
+  <h2>預測</h2>
+  <div id="preci"></div>
 
   <h2>大眼路</h2>
   <div id="bigEyeBoyContainer"></div>
@@ -55,7 +62,7 @@
     ４ １０ １６ ２２ ２８
     ５ １１ １７ ２３ ２９
     */
-    let bigRoad = [1,1,1,1,1,1,1,2,2,2,2,1,2]; // 大路
+    let bigRoad = []; // 大路
     let bigRoadIdx = []; // 對應格子編號
 
 
@@ -72,14 +79,45 @@
       
     });
 
-    
+    const colorMap = { 1: "紅", 2: "藍" };
     // 畫出表格
     function renderAll() {
       bigRoadIdx = outPut(bigRoad,'bigRoadContainer');
       // console.log(bigRoadIdx)
-      otherRoad(1,6,"bigEyeBoyContainer");
-      otherRoad(2,12, "smallContainer");
-      otherRoad(3,18, "thirContainer");
+
+      b1 = otherRoad(bigRoad, bigRoadIdx, 1,6,"bigEyeBoyContainer");
+      b2 = otherRoad(bigRoad, bigRoadIdx,2,12, "smallContainer");
+      b3 = otherRoad(bigRoad, bigRoadIdx,3,18, "thirContainer");
+
+      tp = []
+      addBlue = [...bigRoad, 2]
+      bigRoadBlueIdx = outPut(addBlue,'');
+      tp.push( otherRoad(addBlue, bigRoadBlueIdx, 1,6,""))
+      tp.push( otherRoad(addBlue, bigRoadBlueIdx,2,12, ""))
+      tp.push( otherRoad(addBlue, bigRoadBlueIdx,3,18, ""))
+    
+
+
+      addRed = [...bigRoad, 1]
+      bigRoadRedIdx = outPut(addRed,'');
+      tp.push( otherRoad(addRed, bigRoadRedIdx, 1,6,""))
+      tp.push( otherRoad(addRed, bigRoadRedIdx,2,12, ""))
+      tp.push( otherRoad(addRed, bigRoadRedIdx,3,18, ""))
+
+
+      
+      const container = document.getElementById("preci");
+      container.innerHTML = '';  // 清空內容
+
+      tp.map(item => colorMap[item] || item).forEach(text => {
+        if(text != undefined){
+          const span = document.createElement("span");
+          span.textContent = text+ "　";
+          container.appendChild(span);
+        }
+      });
+
+      
       
     }
 
@@ -147,7 +185,7 @@
           if(currentIdx > maxIdx) maxIdx = currentIdx
         }
 
-        renderTable1(road, saveIdxMap, containerId, false, maxIdx)
+        if(containerId != "") renderTable1(road, saveIdxMap, containerId, false, maxIdx)
 
         return saveIdxMap
     }
@@ -164,34 +202,41 @@
       return ans
     }
     
-    function otherRoad(line, minIdx,  containerId){
+    function otherRoad(inputBigRoad, inputBigRoadIdx, line, minIdx,  containerId){
         let currentMinIdx = minIdx
         let ans = [] // 輸出該路結果
         let start = 1000
-        for(let i = 0; i < bigRoadIdx.length; i++){
-          if(bigRoadIdx[i] == minIdx+1 || bigRoadIdx[i] == minIdx+6){
+        for(let i = 0; i < inputBigRoadIdx.length; i++){
+          if(inputBigRoadIdx[i] == minIdx+1 || inputBigRoadIdx[i] == minIdx+6){
             start = i
             break
           }
         }
 
-        for(let i = start; i < bigRoad.length; i++){
-          if(bigRoadIdx[i] > currentMinIdx){
+        for(let i = start; i < inputBigRoad.length; i++){
+          if(inputBigRoadIdx[i] > currentMinIdx){
             // 每行第一個
-            if(bigRoadIdx[i] % 6 == 0){
-              lineCount(bigRoadIdx[i]-(6*(line+1))) == lineCount(bigRoadIdx[i]-6) ? ans.push(1) :ans.push(2)
+            if(inputBigRoadIdx[i] % 6 == 0){
+              // inputBigRoadIdx[i]-(6*(line+1)) 前n列
+              lineCount(inputBigRoadIdx[i]-(6*(line+1))) == lineCount(inputBigRoadIdx[i]-6) ? ans.push(1) : ans.push(2)
             }
             // 其餘檢查
             else{
-              let preXline = lineCount(6*(Math.floor(bigRoadIdx[i]/6)-line))
-              let selfIdx = bigRoadIdx[i]%6
+              // 6*(Math.floor(inputBigRoadIdx[i]/6)-line) 前n列開頭編號
+              let preXline = lineCount(6*(Math.floor(inputBigRoadIdx[i]/6)-line))
+              // 目前由上往下數個數(0,1,2,3,4,5)
+              let selfIdx = inputBigRoadIdx[i]%6
               preXline > selfIdx + 1 ? ans.push(1) : selfIdx + 1 - preXline == 1 ? ans.push(2) : ans.push(1)
             }
-            currentMinIdx = bigRoadIdx[i]
+            currentMinIdx = inputBigRoadIdx[i]
           }
         }
-        // 輸出答案，並繪製畫面
-        outPut(ans, containerId)
+        
+        
+        // // 輸出答案，並繪製畫面
+        if(containerId != "") outPut(ans, containerId)
+
+        return ans.pop()
     }
 
 
