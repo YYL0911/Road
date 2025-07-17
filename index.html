@@ -76,7 +76,7 @@
     document.addEventListener('keydown', function(event) {
       if (event.key === '1') addResult(1)
       else if (event.key === '2') addResult(2)
-      
+      else if(event.key === "Backspace") cleanPre()
     });
 
     const colorMap = { 1: "紅", 2: "藍" };
@@ -90,22 +90,20 @@
       b3 = otherRoad(bigRoad, bigRoadIdx,3,18, "thirContainer");
 
       tp = []
-      addBlue = [...bigRoad, 2]
+      const last24 = bigRoad.slice(-30);
+      addBlue = [...last24, 2]
       bigRoadBlueIdx = outPut(addBlue,'');
       tp.push( otherRoad(addBlue, bigRoadBlueIdx, 1,6,""))
       tp.push( otherRoad(addBlue, bigRoadBlueIdx,2,12, ""))
       tp.push( otherRoad(addBlue, bigRoadBlueIdx,3,18, ""))
-    
 
-
-      addRed = [...bigRoad, 1]
+      addRed = [...last24, 1]
       bigRoadRedIdx = outPut(addRed,'');
       tp.push( otherRoad(addRed, bigRoadRedIdx, 1,6,""))
       tp.push( otherRoad(addRed, bigRoadRedIdx,2,12, ""))
       tp.push( otherRoad(addRed, bigRoadRedIdx,3,18, ""))
 
 
-      
       const container = document.getElementById("preci");
       container.innerHTML = '';  // 清空內容
 
@@ -116,9 +114,6 @@
           container.appendChild(span);
         }
       });
-
-      
-      
     }
 
     renderAll(); // 初始畫面
@@ -192,11 +187,11 @@
 
 
     // 計算指定行數有連續相同幾個(以第一格為準)
-    function lineCount(startIdx){
-      let target = bigRoad[bigRoadIdx.indexOf(startIdx)]
+    function lineCount(inputBigRoad, inputBigRoadIdx, startIdx){
+      let target = inputBigRoad[inputBigRoadIdx.indexOf(startIdx)]
       let ans = 0
       for(let i = startIdx; i < startIdx + 6; i++){
-        if(bigRoadIdx.includes(i) && bigRoad[bigRoadIdx.indexOf(i)] == target) ans++
+        if(inputBigRoadIdx.includes(i) && inputBigRoad[inputBigRoadIdx.indexOf(i)] == target) ans++
         else break
       }
       return ans
@@ -219,12 +214,12 @@
             // 每行第一個
             if(inputBigRoadIdx[i] % 6 == 0){
               // inputBigRoadIdx[i]-(6*(line+1)) 前n列
-              lineCount(inputBigRoadIdx[i]-(6*(line+1))) == lineCount(inputBigRoadIdx[i]-6) ? ans.push(1) : ans.push(2)
+              lineCount(inputBigRoad, inputBigRoadIdx, inputBigRoadIdx[i]-(6*(line+1))) == lineCount(inputBigRoad, inputBigRoadIdx, inputBigRoadIdx[i]-6) ? ans.push(1) : ans.push(2)
             }
             // 其餘檢查
             else{
               // 6*(Math.floor(inputBigRoadIdx[i]/6)-line) 前n列開頭編號
-              let preXline = lineCount(6*(Math.floor(inputBigRoadIdx[i]/6)-line))
+              let preXline = lineCount(inputBigRoad, inputBigRoadIdx, 6*(Math.floor(inputBigRoadIdx[i]/6)-line))
               // 目前由上往下數個數(0,1,2,3,4,5)
               let selfIdx = inputBigRoadIdx[i]%6
               preXline > selfIdx + 1 ? ans.push(1) : selfIdx + 1 - preXline == 1 ? ans.push(2) : ans.push(1)
