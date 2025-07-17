@@ -237,8 +237,10 @@
               else currentMinIdx = inputBigRoadIdx[i]+1
             }
             else{
-              if(inputBigRoadIdx.includes(inputBigRoadIdx[i]+1)) currentMinIdx = inputBigRoadIdx[i]+1
+              if(inputBigRoadIdx[i] + 1 == inputBigRoadIdx[i+1]) currentMinIdx = inputBigRoadIdx[i]+1
               else currentMinIdx = Math.floor((inputBigRoadIdx[i]+6)/6)*6
+
+              inputBigRoadIdx[i] + 1 == inputBigRoadIdx[i+1]
             }
           }
         }
